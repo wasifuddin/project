@@ -171,8 +171,27 @@ def run_edit(image: Image.Image, prompt: str, model: str,
     )
 
 
-def write_lyrics(theme: str, genre: str, mood: str) -> str:
-    """Use a Gemini text model to draft song lyrics from a theme."""
+def lyric_guidance(length_s: int) -> str:
+    """Structure + size instruction so lyrics fit the chosen song length."""
+    if length_s <= 15:
+        return ("Write just one short, catchy hook of about 2 lines - "
+                "no separate sections, no [Verse]/[Chorus] tags.")
+    if length_s <= 30:
+        return "Write a short verse and a chorus, about 4 to 6 lines total."
+    if length_s <= 60:
+        return "Write a verse, a chorus, and a second verse, about 8 to 12 lines."
+    return ("Write a full song (verse, chorus, verse, bridge, chorus), "
+            "about 16 to 24 lines.")
+
+
+def fitting_word_count(length_s: int) -> int:
+    """Roughly how many words can be sung comfortably in a clip of this length."""
+    return max(4, round(length_s * 2.2))
+
+
+def write_lyrics(theme: str, genre: str, mood: str,
+                 length_s: int = 30, tempo: str = "Medium") -> str:
+    """Use a Gemini text model to draft song lyrics sized to the song length."""
     from google import genai
     from google.genai import types
 
@@ -182,9 +201,10 @@ def write_lyrics(theme: str, genre: str, mood: str) -> str:
     )
     prompt = (
         f"Write original song lyrics about: {theme}.\n"
-        f"Genre: {genre}. Mood: {mood}.\n"
-        "Use section tags like [Verse], [Chorus], and [Bridge]. "
-        "Keep it concise - around 12 to 20 lines total. "
+        f"Genre: {genre}. Mood: {mood}. Tempo: {tempo}.\n"
+        f"The song is about {length_s} seconds long. {lyric_guidance(length_s)}\n"
+        "The words must be singable comfortably within that duration at this "
+        "tempo - do not write more than fits. "
         "Return ONLY the lyrics, with no title or commentary."
     )
     resp = client.models.generate_content(model=LYRICS_MODEL, contents=prompt)
@@ -436,6 +456,8 @@ def render_music_studio():
 
     if not instrumental:
         st.subheader("3 - Lyrics")
+        st.caption(f"Tip: a {length_s}s song fits about {fitting_word_count(length_s)} "
+                   "words. The AI writer matches the length automatically.")
         src = st.pills("Lyrics source", ["Write my own", "Generate with AI"],
                        selection_mode="single", default="Write my own",
                        label_visibility="collapsed") or "Write my own"
@@ -448,8 +470,9 @@ def render_music_studio():
                     st.warning("Describe a theme first.")
                 else:
                     try:
-                        with st.spinner("Writing lyrics..."):
-                            ss.lyrics_text = write_lyrics(theme, genre, mood)
+                        with st.spinner(f"Writing lyrics for a {length_s}s song..."):
+                            ss.lyrics_text = write_lyrics(theme, genre, mood,
+                                                          length_s, tempo)
                         st.rerun()
                     except Exception as exc:  # noqa: BLE001
                         st.error(f"Couldn't write lyrics: {exc}")
@@ -462,6 +485,15 @@ def render_music_studio():
                         "[Chorus]\nWe were never meant to stay the same",
             help="Use [Verse], [Chorus], [Bridge] tags to shape the song.",
         )
+        words = len(ss.lyrics_text.split())
+        fit = fitting_word_count(length_s)
+        if ss.lyrics_text.strip():
+            if words > fit * 1.6:
+                st.warning(f"These lyrics are {words} words - likely too many for a "
+                           f"{length_s}s clip (~{fit} fit). They may get rushed or cut "
+                           "off. Shorten them, or choose a longer length.")
+            else:
+                st.caption(f"{words} words (about {fit} fit comfortably in {length_s}s).")
 
     st.subheader("4 - Compose" if not instrumental else "3 - Compose")
     make = st.button("Compose song", type="primary",

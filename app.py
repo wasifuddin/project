@@ -1,8 +1,8 @@
 """
-AI Creative Studio — Streamlit app with two tools:
+AI Creative Studio - Streamlit app with two tools:
 
-  🖼️  Image Editor  — edit an image from a text prompt or one-click style (Gemini)
-  🎵  Music Studio   — turn lyrics + a style into a full song (ElevenLabs Music)
+  Image Editor  - edit an image from a text prompt or one-click style (Gemini)
+  Music Studio  - turn lyrics + a style into a full song (ElevenLabs Music)
 
 Run:
     pip install -r requirements.txt
@@ -33,36 +33,85 @@ RESOLUTIONS = ["1K", "2K", "4K"]
 ASPECT_RATIOS = ["Auto", "1:1", "16:9", "9:16", "4:3", "3:4", "3:2", "2:3"]
 LYRICS_MODEL = os.environ.get("GEMINI_TEXT_MODEL", "gemini-2.5-flash")
 
-# One-click image styles → the instruction sent to the model.
-CUSTOM_LABEL = "✍️ Custom instruction…"
+# One-click image styles -> the instruction sent to the model.
+CUSTOM_LABEL = "Custom instruction"
 IMAGE_PRESETS = {
-    "🎨 Watercolor painting": "Transform this photo into a soft, artistic watercolor painting while keeping the subject recognizable.",
-    "✏️ Pencil sketch": "Turn this image into a detailed hand-drawn black-and-white pencil sketch.",
-    "🧸 3D animated character": "Restyle the main subject as a charming 3D animated movie character with soft cinematic lighting.",
-    "💥 Pop art": "Convert this into bold pop-art with bright flat colors, high contrast, and halftone dots.",
-    "🎭 Anime / cartoon": "Restyle this image as vibrant, detailed anime artwork.",
-    "🦸 Comic book": "Restyle this image as a bold comic-book illustration with inked outlines and cel shading.",
-    "🌃 Cyberpunk neon": "Reimagine this scene with a neon cyberpunk aesthetic: glowing lights and a moody atmosphere.",
-    "📷 Black & white": "Convert this to a striking high-contrast black-and-white photograph.",
-    "🎞️ Vintage film": "Give this a vintage 1970s film look with warm, faded tones and subtle grain.",
-    "🌅 Dramatic sunset sky": "Replace the sky with a dramatic golden-hour sunset, matching the scene's lighting.",
-    "❄️ Add snow": "Add gentle falling snow and a cold, wintry atmosphere to the scene.",
-    "✨ Enhance & sharpen": "Enhance this photo: improve lighting, color balance, and sharpness. Keep it photorealistic.",
-    "🧹 Remove background (white)": "Remove the background entirely and replace it with a clean solid white background.",
-    "🌫️ Blur background (portrait)": "Blur the background for a flattering shallow depth-of-field portrait effect; keep the subject sharp.",
+    "Watercolor painting": "Transform this photo into a soft, artistic watercolor painting while keeping the subject recognizable.",
+    "Pencil sketch": "Turn this image into a detailed hand-drawn black-and-white pencil sketch.",
+    "3D animated character": "Restyle the main subject as a charming 3D animated movie character with soft cinematic lighting.",
+    "Pop art": "Convert this into bold pop-art with bright flat colors, high contrast, and halftone dots.",
+    "Anime / cartoon": "Restyle this image as vibrant, detailed anime artwork.",
+    "Comic book": "Restyle this image as a bold comic-book illustration with inked outlines and cel shading.",
+    "Cyberpunk neon": "Reimagine this scene with a neon cyberpunk aesthetic: glowing lights and a moody atmosphere.",
+    "Black & white": "Convert this to a striking high-contrast black-and-white photograph.",
+    "Vintage film": "Give this a vintage 1970s film look with warm, faded tones and subtle grain.",
+    "Dramatic sunset sky": "Replace the sky with a dramatic golden-hour sunset, matching the scene's lighting.",
+    "Add snow": "Add gentle falling snow and a cold, wintry atmosphere to the scene.",
+    "Enhance & sharpen": "Enhance this photo: improve lighting, color balance, and sharpness. Keep it photorealistic.",
+    "Remove background (white)": "Remove the background entirely and replace it with a clean solid white background.",
+    "Blur background (portrait)": "Blur the background for a flattering shallow depth-of-field portrait effect; keep the subject sharp.",
 }
 
 # ---- Music (ElevenLabs) config ---------------------------------------------- #
 MUSIC_MODEL = os.environ.get("ELEVENLABS_MUSIC_MODEL", "music_v1")
 MUSIC_MIN_S, MUSIC_MAX_S = 10, 180
-MUSIC_GENRES = ["Pop", "Synthwave", "Lo-fi hip hop", "Rock", "Acoustic / folk",
-                "R&B / soul", "EDM / dance", "Cinematic / orchestral", "Jazz",
-                "Country", "Hip hop / rap", "Reggae", "Metal", "Ambient"]
-MUSIC_MOODS = ["Happy / upbeat", "Chill / relaxed", "Emotional / sad",
-               "Epic / powerful", "Romantic", "Dark / moody", "Dreamy", "Energetic"]
-MUSIC_VOCALS = ["Female vocals", "Male vocals", "Duet", "Choir / group", "No preference"]
+# Each category answers ONE distinct question - no overlap between rows.
+
+# GENRE - what kind of music (popular, reel-friendly styles).
+MUSIC_GENRES = ["Pop", "Bollywood", "Afrobeats", "Amapiano", "Phonk", "Lo-fi",
+                "Hip hop", "Trap", "Reggaeton", "K-pop", "EDM", "House",
+                "Synthwave", "Indie", "R&B", "Acoustic", "Rock", "Cinematic"]
+
+# USE-CASE - what the clip is for (reel context). Label -> short style phrase.
+MUSIC_VIBES = {
+    "General": "",
+    "Travel": "travel vlog",
+    "Vlog": "casual vlog background",
+    "Gym / Workout": "high-energy workout",
+    "Party": "party anthem",
+    "Wedding": "wedding",
+    "Fashion": "fashion runway",
+    "Study / Focus": "calm study focus",
+    "Gaming": "gaming background",
+    "Cinematic": "cinematic montage",
+}
+
+# MOOD - the emotion.
+MUSIC_MOODS = ["Romantic", "Happy", "Chill", "Sad", "Energetic", "Dreamy",
+               "Dark", "Epic"]
+
+# TONE - the texture / how it sounds (multi-select).
+MUSIC_TONES = ["Soft", "Smooth", "Warm", "Punchy", "Heavy", "Acoustic",
+               "Electronic", "Minimal"]
+
+# TEMPO - the speed.
 MUSIC_TEMPOS = ["Slow", "Medium", "Upbeat", "Fast"]
-LENGTH_PRESETS = {"Short (15s)": 15, "Standard (30s)": 30, "Long (60s)": 60, "Extended (120s)": 120}
+
+# VOCALS - who sings.
+MUSIC_VOCALS = ["Female vocals", "Male vocals", "Duet", "No preference"]
+
+# LENGTH - reel-oriented durations.
+LENGTH_PRESETS = {"Reel (15s)": 15, "Story (30s)": 30, "Long (60s)": 60, "Full (120s)": 120}
+
+# QUICK PRESETS - one tap sets a complete, sensible combo for a common reel type.
+PRESETS = {
+    "Travel reel": {"vibe": "Travel", "genre": "Afrobeats", "mood": "Happy",
+                    "tones": ["Punchy"], "tempo": "Upbeat", "vocals": "No preference"},
+    "Romantic": {"vibe": "General", "genre": "Bollywood", "mood": "Romantic",
+                 "tones": ["Soft", "Warm"], "tempo": "Slow", "vocals": "Female vocals"},
+    "Gym pump": {"vibe": "Gym / Workout", "genre": "EDM", "mood": "Energetic",
+                 "tones": ["Heavy", "Punchy"], "tempo": "Fast", "vocals": "No preference"},
+    "Aesthetic": {"vibe": "Vlog", "genre": "Lo-fi", "mood": "Dreamy",
+                  "tones": ["Soft", "Smooth"], "tempo": "Slow", "vocals": "No preference"},
+    "Party": {"vibe": "Party", "genre": "House", "mood": "Energetic",
+              "tones": ["Punchy", "Electronic"], "tempo": "Upbeat", "vocals": "No preference"},
+    "Sad / emotional": {"vibe": "General", "genre": "Acoustic", "mood": "Sad",
+                        "tones": ["Soft", "Acoustic"], "tempo": "Slow", "vocals": "Female vocals"},
+    "Gaming": {"vibe": "Gaming", "genre": "Phonk", "mood": "Dark",
+               "tones": ["Heavy", "Electronic"], "tempo": "Fast", "vocals": "No preference"},
+    "Cinematic": {"vibe": "Cinematic", "genre": "Cinematic", "mood": "Epic",
+                  "tones": ["Heavy"], "tempo": "Medium", "vocals": "No preference"},
+}
 
 
 def get_image_key():
@@ -135,7 +184,7 @@ def write_lyrics(theme: str, genre: str, mood: str) -> str:
         f"Write original song lyrics about: {theme}.\n"
         f"Genre: {genre}. Mood: {mood}.\n"
         "Use section tags like [Verse], [Chorus], and [Bridge]. "
-        "Keep it concise — around 12 to 20 lines total. "
+        "Keep it concise - around 12 to 20 lines total. "
         "Return ONLY the lyrics, with no title or commentary."
     )
     resp = client.models.generate_content(model=LYRICS_MODEL, contents=prompt)
@@ -151,8 +200,10 @@ def img_to_png_bytes(image: Image.Image) -> bytes:
 # --------------------------------------------------------------------------- #
 # Music generation (ElevenLabs Music)
 # --------------------------------------------------------------------------- #
-def build_style_string(genre, mood, vocals, tempo, extra) -> str:
-    parts = [genre, mood, f"{tempo} tempo" if tempo else None,
+def build_style_string(genre, mood, vocals, tempo, extra, vibe_phrase="", tones=None) -> str:
+    tone_str = ", ".join(tones) if tones else None
+    parts = [genre, mood, tone_str, (vibe_phrase or "").strip() or None,
+             f"{tempo} tempo" if tempo else None,
              vocals if vocals and vocals != "No preference" else None,
              (extra or "").strip() or None]
     return ", ".join(p for p in parts if p)
@@ -199,8 +250,8 @@ def _format_eleven_error(exc) -> str:
     if status == "missing_permissions":
         return (
             "Your ElevenLabs API key lacks the **music_generation** permission. "
-            "In elevenlabs.io → Profile → API Keys, edit the key and enable "
-            "‘Music’ (or use a key with no scope restrictions), then restart."
+            "In elevenlabs.io -> Profile -> API Keys, edit the key and enable "
+            "'Music' (or use a key with no scope restrictions), then restart."
         )
     if code == 401:
         return f"ElevenLabs auth failed (401): {message or 'check your API key.'}"
@@ -210,7 +261,7 @@ def _format_eleven_error(exc) -> str:
 # --------------------------------------------------------------------------- #
 # Page setup + session state
 # --------------------------------------------------------------------------- #
-st.set_page_config(page_title="AI Creative Studio", page_icon="🎨", layout="wide")
+st.set_page_config(page_title="AI Creative Studio", layout="wide")
 
 ss = st.session_state
 ss.setdefault("original", None)
@@ -225,7 +276,7 @@ ss.setdefault("lyrics_text", "")
 # Image Editor tool
 # --------------------------------------------------------------------------- #
 def render_image_editor():
-    st.title("🪄 Image Editor")
+    st.title("Image Editor")
     st.caption("Upload a photo, pick a one-click style (or write your own), and "
                "Gemini edits it. Each result feeds back in so you can keep refining.")
 
@@ -248,7 +299,7 @@ def render_image_editor():
             ss.current = img
             ss.upload_id = uploaded.file_id
 
-        with st.expander("⚙️ Advanced (model & quality)"):
+        with st.expander("Advanced (model & quality)"):
             model = st.selectbox(
                 "Model", ALLOWED_MODELS,
                 index=ALLOWED_MODELS.index(DEFAULT_MODEL) if DEFAULT_MODEL in ALLOWED_MODELS else 0,
@@ -257,20 +308,20 @@ def render_image_editor():
             is_gemini3 = model.startswith("gemini-3")
             resolution = st.selectbox(
                 "Resolution", RESOLUTIONS, index=0, disabled=not is_gemini3,
-                help="1K is ~5× faster than 2K.",
+                help="1K is about 5x faster than 2K.",
             )
             aspect_ratio = st.selectbox(
                 "Aspect ratio", ASPECT_RATIOS, index=0, disabled=not is_gemini3,
-                help="‘Auto’ keeps the source proportions.",
+                help="'Auto' keeps the source proportions.",
             )
 
-        if st.button("↩︎ Reset to original", use_container_width=True,
+        if st.button("Reset to original", use_container_width=True,
                      disabled=ss.original is None):
             ss.current = ss.original
             st.rerun()
 
     if ss.current is None:
-        st.info("⬅️ Upload an image in the sidebar to get started.")
+        st.info("Upload an image in the sidebar to get started.")
         return
 
     st.subheader("Pick a style")
@@ -283,24 +334,24 @@ def render_image_editor():
     if choice == CUSTOM_LABEL:
         prompt = st.text_area(
             "Describe your edit",
-            placeholder="e.g. add a small red boat on the water, make it sunset…",
+            placeholder="e.g. add a small red boat on the water, make it sunset",
             height=90,
         )
     else:
         prompt = IMAGE_PRESETS[choice]
-        st.caption(f"➡️ {prompt}")
+        st.caption(prompt)
 
-    generate = st.button("✨ Apply edit", type="primary",
+    generate = st.button("Apply edit", type="primary",
                          use_container_width=True, disabled=not key)
     if generate:
         if not prompt.strip():
             st.warning("Pick a style or write a custom instruction first.")
         else:
             try:
-                with st.spinner(f"Editing with {model} at {resolution}…"):
+                with st.spinner(f"Editing with {model} at {resolution}..."):
                     ss.current = run_edit(ss.current, prompt.strip(), model,
                                           resolution, aspect_ratio)
-                st.success("Done ✨ — pick another style to keep refining.")
+                st.success("Done - pick another style to keep refining.")
             except Exception as exc:  # noqa: BLE001
                 st.error(f"AI edit failed: {exc}")
 
@@ -313,7 +364,7 @@ def render_image_editor():
         st.subheader("Current")
         st.image(ss.current, use_container_width=True)
         st.download_button(
-            "⤓ Download PNG", data=img_to_png_bytes(ss.current),
+            "Download PNG", data=img_to_png_bytes(ss.current),
             file_name="edited.png", mime="image/png", use_container_width=True,
         )
 
@@ -322,83 +373,106 @@ def render_image_editor():
 # Music Studio tool
 # --------------------------------------------------------------------------- #
 def render_music_studio():
-    st.title("🎵 Music Studio")
+    st.title("Music Studio")
     st.caption("Pick a style, write (or AI-generate) lyrics, and ElevenLabs "
-               "composes a full song with vocals — or go instrumental.")
+               "composes a full song with vocals - or go instrumental.")
 
     key = get_music_key()
     if not key:
         st.error(
             "No music API key. Add **ELEVENLABS_API_KEY** to `.env`, then restart. "
-            "Get one at https://elevenlabs.io → Profile → API Keys."
+            "Get one at https://elevenlabs.io (Profile -> API Keys)."
         )
 
-    st.subheader("1 · Pick your style")
-    genre = st.pills("Genre", MUSIC_GENRES, selection_mode="single",
-                     default=MUSIC_GENRES[0]) or MUSIC_GENRES[0]
-    mood = st.pills("Mood", MUSIC_MOODS, selection_mode="single",
-                    default=MUSIC_MOODS[0]) or MUSIC_MOODS[0]
-    col1, col2 = st.columns(2)
-    with col1:
-        tempo = st.pills("Tempo", MUSIC_TEMPOS, selection_mode="single",
-                         default="Medium") or "Medium"
-    with col2:
-        vocals = st.pills("Vocals", MUSIC_VOCALS, selection_mode="single",
-                          default=MUSIC_VOCALS[0]) or MUSIC_VOCALS[0]
-    extra = st.text_input("Extra notes (optional)", placeholder="e.g. 90 BPM, piano riff")
+    st.subheader("1 - Choose your sound")
+    mode = st.segmented_control(
+        "How to set the style", ["Quick preset", "Build my own"],
+        default="Quick preset", label_visibility="collapsed",
+    ) or "Quick preset"
 
-    st.subheader("2 · Length")
-    length_label = st.pills("Length", list(LENGTH_PRESETS.keys()),
-                            selection_mode="single", default="Standard (30s)",
-                            label_visibility="collapsed") or "Standard (30s)"
+    if mode == "Build my own":
+        genre = st.pills("Genre", MUSIC_GENRES, selection_mode="single",
+                         default=MUSIC_GENRES[0]) or MUSIC_GENRES[0]
+        mood = st.pills("Mood", MUSIC_MOODS, selection_mode="single",
+                        default=MUSIC_MOODS[0]) or MUSIC_MOODS[0]
+        tones = st.pills("Tone / feel (pick any)", MUSIC_TONES,
+                         selection_mode="multi", default=["Soft"])
+        c1, c2, c3 = st.columns(3)
+        with c1:
+            use_case = st.pills("Use-case", list(MUSIC_VIBES.keys()),
+                                selection_mode="single", default="General") or "General"
+        with c2:
+            tempo = st.pills("Tempo", MUSIC_TEMPOS, selection_mode="single",
+                             default="Medium") or "Medium"
+        with c3:
+            vocals = st.pills("Vocals", MUSIC_VOCALS, selection_mode="single",
+                              default=MUSIC_VOCALS[0]) or MUSIC_VOCALS[0]
+        extra = st.text_input("Extra notes (optional)", placeholder="e.g. 90 BPM, piano riff")
+        style = build_style_string(genre, mood, vocals, tempo, extra,
+                                   MUSIC_VIBES[use_case], tones)
+    else:
+        preset_name = st.pills("Preset", list(PRESETS.keys()), selection_mode="single",
+                               default=next(iter(PRESETS)), label_visibility="collapsed") \
+            or next(iter(PRESETS))
+        p = PRESETS[preset_name]
+        genre, mood = p["genre"], p["mood"]   # also used by the lyric writer
+        style = build_style_string(p["genre"], p["mood"], p["vocals"], p["tempo"],
+                                   "", MUSIC_VIBES[p["vibe"]], p["tones"])
+
+    st.caption(f"**Style sent to AI:** {style}")
+
+    st.subheader("2 - Length")
+    cL, cI = st.columns([3, 2])
+    with cL:
+        length_label = st.pills("Length", list(LENGTH_PRESETS.keys()),
+                                selection_mode="single", default="Story (30s)",
+                                label_visibility="collapsed") or "Story (30s)"
+    with cI:
+        instrumental = st.toggle("Instrumental")
     length_s = LENGTH_PRESETS[length_label]
-    instrumental = st.toggle("🎹 Instrumental (no vocals / lyrics)")
-
-    style = build_style_string(genre, mood, vocals, tempo, extra)
-    st.markdown(f"**Selected style:** {style}")
 
     if not instrumental:
-        st.subheader("3 · Lyrics")
-        src = st.pills("Lyrics source", ["✍️ Write my own", "🤖 Generate with AI"],
-                       selection_mode="single", default="✍️ Write my own",
-                       label_visibility="collapsed") or "✍️ Write my own"
-        if src.endswith("with AI"):
+        st.subheader("3 - Lyrics")
+        src = st.pills("Lyrics source", ["Write my own", "Generate with AI"],
+                       selection_mode="single", default="Write my own",
+                       label_visibility="collapsed") or "Write my own"
+        if src == "Generate with AI":
             has_gem = get_image_key() is not None
             theme = st.text_input("Song theme / topic",
                                   placeholder="e.g. chasing dreams in a big city at night")
-            if st.button("🤖 Write lyrics for me", disabled=not has_gem):
+            if st.button("Write lyrics for me", disabled=not has_gem):
                 if not theme.strip():
                     st.warning("Describe a theme first.")
                 else:
                     try:
-                        with st.spinner("Writing lyrics…"):
+                        with st.spinner("Writing lyrics..."):
                             ss.lyrics_text = write_lyrics(theme, genre, mood)
                         st.rerun()
                     except Exception as exc:  # noqa: BLE001
                         st.error(f"Couldn't write lyrics: {exc}")
             if not has_gem:
-                st.caption("⚠️ AI lyrics need a GEMINI_API_KEY.")
+                st.caption("AI lyrics need a GEMINI_API_KEY.")
 
         st.text_area(
             "Lyrics", key="lyrics_text", height=240,
             placeholder="[Verse]\nCity lights are calling out my name\n\n"
-                        "[Chorus]\nWe were never meant to stay the same…",
+                        "[Chorus]\nWe were never meant to stay the same",
             help="Use [Verse], [Chorus], [Bridge] tags to shape the song.",
         )
 
-    st.subheader("4 · Compose" if not instrumental else "3 · Compose")
-    make = st.button("🎼 Compose song", type="primary",
+    st.subheader("4 - Compose" if not instrumental else "3 - Compose")
+    make = st.button("Compose song", type="primary",
                      use_container_width=True, disabled=not key)
 
     if make:
         if not instrumental and not ss.lyrics_text.strip():
-            st.warning("Add some lyrics (or use the AI writer), or tick ‘Instrumental’.")
+            st.warning("Add some lyrics (or use the AI writer), or turn on Instrumental.")
         else:
             try:
-                with st.spinner(f"Composing ~{length_s}s of music…"):
+                with st.spinner(f"Composing ~{length_s}s of music..."):
                     ss.song = compose_music(ss.lyrics_text, style, length_s, instrumental)
-                    ss.song_label = f"{style} · {length_s}s"
-                st.success("Done 🎶")
+                    ss.song_label = f"{style} | {length_s}s"
+                st.success("Done.")
             except Exception as exc:  # noqa: BLE001
                 ss.song = None
                 st.error(f"Music generation failed: {exc}")
@@ -408,7 +482,7 @@ def render_music_studio():
         st.caption(ss.song_label)
         st.audio(ss.song, format="audio/mp3")
         st.download_button(
-            "⤓ Download MP3", data=ss.song, file_name="song.mp3",
+            "Download MP3", data=ss.song, file_name="song.mp3",
             mime="audio/mpeg", use_container_width=True,
         )
 
@@ -416,11 +490,11 @@ def render_music_studio():
 # --------------------------------------------------------------------------- #
 # Top-level navigation
 # --------------------------------------------------------------------------- #
-st.sidebar.title("🎨 AI Creative Studio")
-tool = st.sidebar.radio("Tool", ["🎵 Music Studio", "🖼️ Image Editor"]) or "🎵 Music Studio"
+st.sidebar.title("AI Creative Studio")
+tool = st.sidebar.radio("Tool", ["Music Studio", "Image Editor"]) or "Music Studio"
 st.sidebar.divider()
 
-if tool.endswith("Image Editor"):
+if tool == "Image Editor":
     render_image_editor()
 else:
     render_music_studio()

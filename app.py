@@ -397,28 +397,31 @@ def render_music_studio():
                         default=MUSIC_MOODS[0]) or MUSIC_MOODS[0]
         tones = st.pills("Tone / feel (pick any)", MUSIC_TONES,
                          selection_mode="multi", default=["Soft"])
-        c1, c2, c3 = st.columns(3)
+        c1, c2 = st.columns(2)
         with c1:
             use_case = st.pills("Use-case", list(MUSIC_VIBES.keys()),
                                 selection_mode="single", default="General") or "General"
         with c2:
             tempo = st.pills("Tempo", MUSIC_TEMPOS, selection_mode="single",
                              default="Medium") or "Medium"
-        with c3:
-            vocals = st.pills("Vocals", MUSIC_VOCALS, selection_mode="single",
-                              default=MUSIC_VOCALS[0]) or MUSIC_VOCALS[0]
         extra = st.text_input("Extra notes (optional)", placeholder="e.g. 90 BPM, piano riff")
-        style = build_style_string(genre, mood, vocals, tempo, extra,
-                                   MUSIC_VIBES[use_case], tones)
+        vibe_phrase = MUSIC_VIBES[use_case]
+        default_vocals = MUSIC_VOCALS[0]
     else:
         preset_name = st.pills("Preset", list(PRESETS.keys()), selection_mode="single",
                                default=next(iter(PRESETS)), label_visibility="collapsed") \
             or next(iter(PRESETS))
         p = PRESETS[preset_name]
-        genre, mood = p["genre"], p["mood"]   # also used by the lyric writer
-        style = build_style_string(p["genre"], p["mood"], p["vocals"], p["tempo"],
-                                   "", MUSIC_VIBES[p["vibe"]], p["tones"])
+        genre, mood, tones, tempo = p["genre"], p["mood"], p["tones"], p["tempo"]
+        vibe_phrase = MUSIC_VIBES[p["vibe"]]
+        extra = ""
+        default_vocals = p["vocals"]
 
+    # Vocals applies to both paths - pick the singer even when using a preset.
+    vocals = st.pills("Vocals", MUSIC_VOCALS, selection_mode="single",
+                      default=default_vocals) or default_vocals
+
+    style = build_style_string(genre, mood, vocals, tempo, extra, vibe_phrase, tones)
     st.caption(f"**Style sent to AI:** {style}")
 
     st.subheader("2 - Length")

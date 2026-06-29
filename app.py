@@ -189,25 +189,40 @@ def fitting_word_count(length_s: int) -> int:
     return max(4, round(length_s * 2.2))
 
 
-def write_lyrics(theme: str, genre: str, mood: str,
-                 length_s: int = 30, tempo: str = "Medium") -> str:
-    """Use a Gemini text model to draft song lyrics sized to the song length."""
+def write_lyrics(theme: str, genre: str, mood: str, length_s: int = 30,
+                 tempo: str = "Medium", images=None) -> str:
+    """Draft song lyrics sized to the song length.
+
+    If images are provided, the lyrics are inspired by what's in the photos
+    (multimodal); otherwise they're based on the text theme.
+    """
     from google import genai
     from google.genai import types
 
     client = genai.Client(
         api_key=get_image_key(),
-        http_options=types.HttpOptions(timeout=60_000),
+        http_options=types.HttpOptions(timeout=90_000),
     )
-    prompt = (
-        f"Write original song lyrics about: {theme}.\n"
+    spec = (
         f"Genre: {genre}. Mood: {mood}. Tempo: {tempo}.\n"
         f"The song is about {length_s} seconds long. {lyric_guidance(length_s)}\n"
         "The words must be singable comfortably within that duration at this "
-        "tempo - do not write more than fits. "
+        "tempo - do not write more than fits.\n"
         "Return ONLY the lyrics, with no title or commentary."
     )
-    resp = client.models.generate_content(model=LYRICS_MODEL, contents=prompt)
+    if images:
+        head = (
+            "Write original song lyrics inspired by the attached photo(s) that the "
+            "user will post on social media. Reflect the scene, mood, subjects, and "
+            "story shown in the images."
+        )
+        if theme.strip():
+            head += f" Also weave in this theme: {theme.strip()}."
+        contents = [head + "\n" + spec, *images]
+    else:
+        contents = [f"Write original song lyrics about: {theme}.\n" + spec]
+
+    resp = client.models.generate_content(model=LYRICS_MODEL, contents=contents)
     return (resp.text or "").strip()
 
 
@@ -463,16 +478,28 @@ def render_music_studio():
                        label_visibility="collapsed") or "Write my own"
         if src == "Generate with AI":
             has_gem = get_image_key() is not None
-            theme = st.text_input("Song theme / topic",
-                                  placeholder="e.g. chasing dreams in a big city at night")
+            photos = st.file_uploader(
+                "Add photos (optional) - lyrics will be based on what's in them",
+                type=["png", "jpg", "jpeg", "webp"], accept_multiple_files=True,
+            )
+            imgs = ([Image.open(io.BytesIO(f.getvalue())).convert("RGB") for f in photos]
+                    if photos else None)
+            if imgs:
+                st.image(imgs, width=100)
+            theme = st.text_input(
+                "Theme / topic (optional - adds to the photos)" if imgs else "Song theme / topic",
+                placeholder="e.g. chasing dreams in a big city at night",
+            )
             if st.button("Write lyrics for me", disabled=not has_gem):
-                if not theme.strip():
-                    st.warning("Describe a theme first.")
+                if not theme.strip() and not imgs:
+                    st.warning("Add a theme or upload at least one photo.")
                 else:
                     try:
-                        with st.spinner(f"Writing lyrics for a {length_s}s song..."):
+                        spin = ("Reading your photos and writing lyrics..." if imgs
+                                else f"Writing lyrics for a {length_s}s song...")
+                        with st.spinner(spin):
                             ss.lyrics_text = write_lyrics(theme, genre, mood,
-                                                          length_s, tempo)
+                                                          length_s, tempo, imgs)
                         st.rerun()
                     except Exception as exc:  # noqa: BLE001
                         st.error(f"Couldn't write lyrics: {exc}")

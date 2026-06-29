@@ -40,8 +40,10 @@ opens on Music Studio by default; switch tools from the sidebar.
      Use-case, Tempo, Vocals. The exact style sent to the AI is shown back to you.
 2. Pick a **length** (15s / 30s / 60s / 120s) and optionally toggle **Instrumental**.
 3. **Lyrics:** write your own (with `[Verse]` / `[Chorus]` tags), or pick
-   *Generate with AI*, enter a theme, and **Write lyrics for me** drafts them
-   (uses your Gemini key).
+   *Generate with AI*. You can enter a theme, **upload the photos you plan to
+   post** (optional) so the lyrics are written about what's in them, or both;
+   then **Write lyrics for me** drafts them. Lyrics are sized to the chosen
+   length automatically (a short hook for 15s up to a full song for 120s).
 4. **Compose song** - play it inline and **Download MP3**.
 
 Uses ElevenLabs Music (`music_v1`); override via `ELEVENLABS_MUSIC_MODEL`.
